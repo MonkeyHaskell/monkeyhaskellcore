@@ -1,4 +1,6 @@
 package node.literal;
 
-public abstract class Literal {
+import node.Node;
+
+public abstract class Literal extends Node {
 }

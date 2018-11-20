@@ -1,8 +1,7 @@
 package interpreter;
 
-import node.Application;
-import node.Identifier;
-import node.Node;
+import node.*;
+import node.literal.Literal;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,7 +10,24 @@ public class Interpreter {
 
     private final Map<String, Node> lookupTable = new HashMap<>();
 
-    public static void evaluate(Node node) {
+    public static void evaluate(Node node) throws NotARecognizedNodeTypeException {
+        if (node instanceof Identifier) {
+
+        } else if (node instanceof Application) {
+
+        } else if (node instanceof BuiltInFunction) {
+
+        } else if (node instanceof LambdaAbstraction) {
+
+        } else if (node instanceof Identifier) {
+
+        } else if (node instanceof Constructor) {
+
+        } else if (node instanceof Literal) {
+
+        } else {
+            throw new NotARecognizedNodeTypeException();
+        }
 
     }
 
@@ -38,11 +54,13 @@ public class Interpreter {
         /* BuiltIn à gauche :
             On appelle la fonction
          */
+    }
 
-
-
+    public static void evaluateBuiltInFunction(final BuiltInFunction builtInFunction) {
 
     }
+
+    public static void
 
     public static boolean isWHNF(final Node node) {
         return false;
