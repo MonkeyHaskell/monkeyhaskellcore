@@ -6,7 +6,24 @@ import expr.literal.Literal;
 import interpreter.exceptions.UnknownBuiltInFunction;
 import interpreter.exceptions.WrongTypeException;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+
 public class Interpreter {
+    private static final Map<String, BuiltIn> builtInFunctions = new HashMap<>();
+
+    public static void initBuiltin() {
+        Function<List<Expr>, Literal> plus = i -> new Integer(((Integer)i.get(0)).getValue() + ((Integer)i.get(1)).getValue());
+        builtInFunctions.put("+", new BuiltIn("+", 2, plus));
+        Function<List<Expr>, Literal> minus = i -> new Integer(((Integer)i.get(0)).getValue() - ((Integer)i.get(1)).getValue());
+        builtInFunctions.put("-", new BuiltIn("-", 2, minus));
+        Function<List<Expr>, Literal> multiply = i -> new Integer(((Integer)i.get(0)).getValue() * ((Integer)i.get(1)).getValue());
+        builtInFunctions.put("*", new BuiltIn("*", 2, multiply));
+    }
+
     public static Expr reduce(final Expr expr) throws Throwable {
         return reduce(expr, new Environment());
     }
@@ -43,22 +60,23 @@ public class Interpreter {
             }
         } else if(current instanceof BuiltIn) {
             BuiltIn function = (BuiltIn) current;
-            if(function.getName().equals("+")) {
-                // not enough arguments, we stop there
-                if(env.getSpineStack().size() < 2) {
+            if(builtInFunctions.containsKey(function.getName())) {
+                BuiltIn functionImpl = builtInFunctions.get(function.getName());
+                if(env.getSpineStack().size() < functionImpl.getArity()) {
                     return expr;
                 } else {
-                    Expr arg1 = env.getSpineStack().pop().getRight();
-                    Expr arg2 = env.getSpineStack().pop().getRight();
-                    Expr reducedArg1 = reduceAll(arg1);
-                    Expr reducedArg2 = reduceAll(arg2);
-                    if(reducedArg1 instanceof Integer && reducedArg2 instanceof Integer) {
-                        Expr reduced = new Integer(((Integer) reducedArg1).getValue() + ((Integer) reducedArg2).getValue());
+                    List<Expr> expressions = new ArrayList<>();
+                    for(int i = 0; i < functionImpl.getArity(); i++) {
+                        expressions.add(reduceAll(env.getSpineStack().pop().getRight()));
+                    }
+                    try {
+                        Expr reduced = functionImpl.getFunction().apply(expressions);
                         return putBackInGraph(expr, reduced, env);
-                    } else {
+                    } catch(ClassCastException cce) {
                         throw new WrongTypeException();
                     }
                 }
+                /* TODO : add head and tail to builtInFunctions Impl */
             } else if(function.getName().equals("head") || function.getName().equals("tail")) {
                 if(env.getSpineStack().size() < 1) {
                     return expr;

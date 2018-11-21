@@ -10,7 +10,7 @@ import java.util.Stack;
 public class Environment {
 
     private final Stack<Application> spineStack;
-    private final Map<String, Expr> lookupTable;
+    private final Map<String, Expr> lookupTable; /* currently not used */
 
     public Environment() {
         this.spineStack = new Stack<>();

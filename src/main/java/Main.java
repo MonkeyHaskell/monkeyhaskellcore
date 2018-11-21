@@ -9,6 +9,7 @@ public class Main {
     private static int exampleCounter = 0;
 
     public static void main(String[] args) {
+        Interpreter.initBuiltin();
         Expr id = new Lambda(new Identifier("x"), new Identifier("x"));
         Expr add1 = new Lambda(new Identifier("x"), new Application(new Application(new BuiltIn("+"), new Identifier("x")), new Integer(1)));
 
