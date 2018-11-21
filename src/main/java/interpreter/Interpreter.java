@@ -29,7 +29,7 @@ public class Interpreter {
     }
 
     public static void evaluateIdentifier(final Identifier identifier) {
-        /* Remplacer l'identifier par son contenu, ou envoyer une exception */
+        /* Remplacer l'identifier par son contenu, ou envoyer une exception si pas trouvé */
     }
 
     public static void evaluateApplication(final Application application) {
@@ -54,7 +54,10 @@ public class Interpreter {
     }
 
     public static void evaluateBuiltInFunction(final BuiltInFunction builtInFunction) {
-
+        /* Imo :
+            Se remplace soit par une lambdaAbstraction si pas assez d'argument,
+            Soit par un literal ?
+         */
     }
 
     public static void evaluateLambdaAbstraction(final LambdaAbstraction lambdaAbstraction) {
