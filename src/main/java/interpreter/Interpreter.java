@@ -12,26 +12,23 @@ public class Interpreter {
 
     public static void evaluate(Node node) throws NotARecognizedNodeTypeException {
         if (node instanceof Identifier) {
-
+            evaluateIdentifier((Identifier)node);
         } else if (node instanceof Application) {
-
+            evaluateApplication((Application)node);
         } else if (node instanceof BuiltInFunction) {
-
+            evaluateBuiltInFunction((BuiltInFunction)node);
         } else if (node instanceof LambdaAbstraction) {
-
-        } else if (node instanceof Identifier) {
-
+            evaluateLambdaAbstraction((LambdaAbstraction)node);
         } else if (node instanceof Constructor) {
-
+            evaluateConstructor((Constructor)node);
         } else if (node instanceof Literal) {
-
+            evaluateLiteral((Literal)node);
         } else {
             throw new NotARecognizedNodeTypeException();
         }
-
     }
 
-    public void evaluateIdentifier(final Identifier identifier) {
+    public static void evaluateIdentifier(final Identifier identifier) {
         /* Remplacer l'identifier par son contenu, ou envoyer une exception */
     }
 
@@ -60,7 +57,17 @@ public class Interpreter {
 
     }
 
-    public static void
+    public static void evaluateLambdaAbstraction(final LambdaAbstraction lambdaAbstraction) {
+
+    }
+
+    public static void evaluateConstructor(final Constructor constructor) {
+
+    }
+
+    public static void evaluateLiteral(final Literal literal) {
+
+    }
 
     public static boolean isWHNF(final Node node) {
         return false;
