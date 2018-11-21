@@ -88,6 +88,29 @@ public class Interpreter {
                     }
                 }
             }
+            else if (function.getName().equals("head") || function.getName().equals("tail"))
+            {
+                if (env.getSpineStack().size() < 1)
+                {
+                    return expr;
+                }
+                else
+                {
+                    Expr arg = env.getSpineStack().pop().getRight();
+                    if (arg instanceof Cons)
+                    {
+                        return (function.getName().equals("head")) ? ((Cons) arg).getHead() : ((Cons) arg).getTail();
+                    }
+                    else if (arg instanceof Nil)
+                    {
+                        return arg;
+                    }
+                    else
+                    {
+                        throw new WrongTypeException();
+                    }
+                }
+            }
             else
             {
                 throw new UnknownBuiltInFunction();

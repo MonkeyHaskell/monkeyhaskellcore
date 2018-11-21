@@ -27,7 +27,7 @@ public class Cons extends Expr {
 
     @Override
     public String toString() {
-        return head + " : " + tail;
+        return head + ":" + tail;
     }
 
     @Override
