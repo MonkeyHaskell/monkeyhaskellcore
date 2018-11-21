@@ -14,7 +14,7 @@ public class BuiltIn extends Expr {
         this.name = name;
     }
 
-    public BuiltIn(String name, int arity, Function function) {
+    public BuiltIn(String name, int arity, Function<List<Expr>, Literal> function) {
         this.name = name;
         this.arity = arity;
         this.function = function;
