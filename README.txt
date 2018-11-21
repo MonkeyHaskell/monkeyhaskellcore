@@ -8,7 +8,7 @@ Programme :
 Fonction = nom + nomparam <-> sous graphe
 	HashMap
 	
-Application = node à deux sous graphes (c'est un sous graphe)
+Application = expr à deux sous graphes (c'est un sous graphe)
 
 Literal = valeurs finies (Int, boolean, String)
 

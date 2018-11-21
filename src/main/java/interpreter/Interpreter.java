@@ -1,75 +1,142 @@
 package interpreter;
 
-import node.*;
-import node.literal.Literal;
+import expr.*;
+import expr.literal.Integer;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Stack;
+
+class Env
+{
+    private Stack<Application> spineStack;
+    private Map<String, Expr> lookupTable;
+
+    public Env()
+    {
+        this.spineStack = new Stack<>();
+        this.lookupTable = new HashMap<>();
+    }
+
+    public Env(Stack<Application> spineStack, Map<String, Expr> lookupTable) {
+        this.spineStack = spineStack;
+        this.lookupTable = lookupTable;
+    }
+
+    public Stack<Application> getSpineStack() {
+        return spineStack;
+    }
+
+    public Map<String, Expr> getLookupTable() {
+        return lookupTable;
+    }
+}
 
 public class Interpreter {
+    public static Expr reduce(Expr expr) throws Throwable
+    {
+        return reduce(expr, new Env());
+    }
 
-    private final Map<String, Node> lookupTable = new HashMap<>();
+    public static Expr reduce(Expr expr, Env env) throws Throwable
+    {
+        // Look for leftmost outermost redex
+        Expr current = expr;
+        while (current instanceof Application)
+        {
+            env.getSpineStack().push((Application)current);
+            current = ((Application) current).getLeft();
+        }
 
-    public static void evaluate(Node node) throws NotARecognizedNodeTypeException {
-        if (node instanceof Identifier) {
-            evaluateIdentifier((Identifier)node);
-        } else if (node instanceof Application) {
-            evaluateApplication((Application)node);
-        } else if (node instanceof BuiltInFunction) {
-            evaluateBuiltInFunction((BuiltInFunction)node);
-        } else if (node instanceof LambdaAbstraction) {
-            evaluateLambdaAbstraction((LambdaAbstraction)node);
-        } else if (node instanceof Constructor) {
-            evaluateConstructor((Constructor)node);
-        } else if (node instanceof Literal) {
-            evaluateLiteral((Literal)node);
-        } else {
-            throw new NotARecognizedNodeTypeException();
+        if (current instanceof Lambda)
+        {
+            // nothing to reduce since not applied
+            if (env.getSpineStack().empty())
+            {
+                return expr;
+            }
+            // reducing
+            else
+            {
+                Lambda lambda = (Lambda)current;
+                Expr converted = replace(lambda.getParameter().getValue(), lambda.getBody().clone(), env.getSpineStack().pop().getRight());
+                return putBackInGraph(expr, converted, env);
+            }
+        }
+        else if (current instanceof BuiltIn)
+        {
+            BuiltIn function = (BuiltIn) current;
+            if (function.getName().equals("+"))
+            {
+                // not enough arguments, we stop there
+                if (env.getSpineStack().size() < 2)
+                {
+                    return expr;
+                }
+                else
+                {
+                    Expr arg1 = env.getSpineStack().pop().getRight();
+                    Expr arg2 = env.getSpineStack().pop().getRight();
+                    if (arg1 instanceof Integer && arg2 instanceof Integer)
+                    {
+                        Expr reduced = new Integer(((Integer) arg1).getValue() + ((Integer) arg2).getValue());
+                        return putBackInGraph(expr, reduced, env);
+                    }
+                    else
+                    {
+                        throw new WrongTypeException();
+                    }
+                }
+            }
+            else
+            {
+                throw new UnknownBuiltInFunction();
+            }
+        }
+        else
+        {
+            return expr;
         }
     }
 
-    public static void evaluateIdentifier(final Identifier identifier) {
-        /* Remplacer l'identifier par son contenu, ou envoyer une exception */
+    private static Expr putBackInGraph(Expr graph, Expr value, Env env)
+    {
+        if (env.getSpineStack().empty())
+        {
+            return value;
+        }
+        else
+        {
+            Application parent = env.getSpineStack().peek();
+            parent.setLeft(value);
+            return graph;
+        }
     }
 
-    public static void evaluateApplication(final Application application) {
-        /* LambdaAbstraction à gauche
-            Récupère le paramètre
-            Parcours du body
-            Remplacement des Identifier portant le même nom que le paramètre par l'arbre droit
-            Il faudrait remplacer l'application par le body obtenu
-         */
-
-        /* Identifier à gauche
-            On evaluate identifier
-         */
-
-        /* Application à gauche :
-
-         */
-
-        /* BuiltIn à gauche :
-            On appelle la fonction
-         */
-    }
-
-    public static void evaluateBuiltInFunction(final BuiltInFunction builtInFunction) {
-
-    }
-
-    public static void evaluateLambdaAbstraction(final LambdaAbstraction lambdaAbstraction) {
-
-    }
-
-    public static void evaluateConstructor(final Constructor constructor) {
-
-    }
-
-    public static void evaluateLiteral(final Literal literal) {
-
-    }
-
-    public static boolean isWHNF(final Node node) {
-        return false;
+    public static Expr replace(String identifier, Expr expr, Expr value)
+    {
+        if (expr instanceof Identifier)
+        {
+            if (((Identifier) expr).getValue().equals(identifier))
+            {
+                return value;
+            }
+        }
+        if (expr instanceof Application)
+        {
+            Application application = (Application)expr;
+            application.setLeft(replace(identifier, application.getLeft(), value));
+            application.setRight(replace(identifier, application.getRight(), value));
+            return application;
+        }
+        else if (expr instanceof Lambda)
+        {
+            Lambda lambda = (Lambda) expr;
+            if (!lambda.getParameter().getValue().equals(identifier))
+            {
+                return replace(identifier, lambda.getBody().clone(), value);
+            }
+        }
+        return expr;
     }
 }

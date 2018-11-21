@@ -1,4 +1,4 @@
 package interpreter;
 
-public class NotARecognizedNodeTypeException extends Throwable {
+public class NotARecognizedNodeTypeException extends InterpreterException {
 }
