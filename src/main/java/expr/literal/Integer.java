@@ -26,4 +26,10 @@ public class Integer extends Literal {
     public Expr clone() {
         return new Integer(value);
     }
+
+    @Override
+    public boolean equals(Expr expr) {
+        return expr instanceof Integer
+                && ((Integer) expr).getValue() == this.getValue();
+    }
 }

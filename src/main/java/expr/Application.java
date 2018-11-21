@@ -45,4 +45,11 @@ public class Application extends Expr {
     public Expr clone() {
         return new Application(left.clone(), right.clone());
     }
+
+    @Override
+    public boolean equals(Expr expr) {
+        return expr instanceof Application
+                && ((Application) expr).getLeft().equals(this.getLeft())
+                && ((Application) expr).getRight().equals(this.getRight());
+    }
 }

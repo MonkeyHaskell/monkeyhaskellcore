@@ -34,4 +34,11 @@ public class Cons extends Expr {
     public Expr clone() {
         return new Cons(head, tail);
     }
+
+    @Override
+    public boolean equals(Expr expr) {
+        return expr instanceof Cons
+                && ((Cons)expr).getHead().equals(this.getHead())
+                && ((Cons)expr).getTail().equals(this.getTail());
+    }
 }

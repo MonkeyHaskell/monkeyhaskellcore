@@ -27,4 +27,10 @@ public class Boolean extends Literal {
     public Expr clone() {
         return new Boolean(value);
     }
+
+    @Override
+    public boolean equals(Expr expr) {
+        return expr instanceof Boolean
+                && ((Boolean) expr).isValue() == this.isValue();
+    }
 }

@@ -2,170 +2,112 @@ package interpreter;
 
 import expr.*;
 import expr.literal.Integer;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Stack;
-
-class Env
-{
-    private Stack<Application> spineStack;
-    private Map<String, Expr> lookupTable;
-
-    public Env()
-    {
-        this.spineStack = new Stack<>();
-        this.lookupTable = new HashMap<>();
-    }
-
-    public Env(Stack<Application> spineStack, Map<String, Expr> lookupTable) {
-        this.spineStack = spineStack;
-        this.lookupTable = lookupTable;
-    }
-
-    public Stack<Application> getSpineStack() {
-        return spineStack;
-    }
-
-    public Map<String, Expr> getLookupTable() {
-        return lookupTable;
-    }
-}
+import expr.literal.Literal;
+import interpreter.exceptions.UnknownBuiltInFunction;
+import interpreter.exceptions.WrongTypeException;
 
 public class Interpreter {
-    public static Expr reduce(Expr expr) throws Throwable
-    {
-        // TODO
-        // we need to loop on reduce until
-        // we are done reducing (ie output is same as input)
-        return reduce(expr, new Env());
+    public static Expr reduce(final Expr expr) throws Throwable {
+        return reduce(expr, new Environment());
     }
 
-    public static Expr reduce(Expr expr, Env env) throws Throwable
-    {
-        // Look for leftmost outermost redex
+    public static Expr reduceAll(final Expr expr) throws Throwable {
+        Expr current;
+        Expr reduced = expr;
+        do {
+            current = reduced;
+            reduced = reduce(current, new Environment());
+        } while(!current.equals(reduced));
+
+        return reduced;
+    }
+
+    public static Expr reduce(Expr expr, Environment env) throws Throwable {
         Expr current = expr;
-        while (current instanceof Application)
-        {
+
+        // Look for leftmost outermost redex
+        while(current instanceof Application) {
             env.getSpineStack().push((Application)current);
             current = ((Application) current).getLeft();
         }
 
-        if (current instanceof Lambda)
-        {
+        if(current instanceof Lambda) {
             // nothing to reduce since not applied
-            if (env.getSpineStack().empty())
-            {
+            if(env.getSpineStack().empty()) {
                 return expr;
-            }
+            } else {
             // reducing
-            else
-            {
                 Lambda lambda = (Lambda)current;
                 Expr converted = replace(lambda.getParameter().getValue(), lambda.getBody().clone(), env.getSpineStack().pop().getRight());
                 return putBackInGraph(expr, converted, env);
             }
-        }
-        else if (current instanceof BuiltIn)
-        {
+        } else if(current instanceof BuiltIn) {
             BuiltIn function = (BuiltIn) current;
-            if (function.getName().equals("+"))
-            {
+            if(function.getName().equals("+")) {
                 // not enough arguments, we stop there
-                if (env.getSpineStack().size() < 2)
-                {
+                if(env.getSpineStack().size() < 2) {
                     return expr;
-                }
-                else
-                {
+                } else {
                     Expr arg1 = env.getSpineStack().pop().getRight();
                     Expr arg2 = env.getSpineStack().pop().getRight();
-                    Expr reducedArg1 = reduce(arg1);
-                    Expr reducedArg2 = reduce(arg2);
-                    if (arg1 instanceof Integer && arg2 instanceof Integer)
-                    {
-                        Expr reduced = new Integer(((Integer) arg1).getValue() + ((Integer) arg2).getValue());
+                    Expr reducedArg1 = reduceAll(arg1);
+                    Expr reducedArg2 = reduceAll(arg2);
+                    if(reducedArg1 instanceof Integer && reducedArg2 instanceof Integer) {
+                        Expr reduced = new Integer(((Integer) reducedArg1).getValue() + ((Integer) reducedArg2).getValue());
                         return putBackInGraph(expr, reduced, env);
-                    }
-                    else
-                    {
+                    } else {
                         throw new WrongTypeException();
                     }
                 }
-            }
-            else if (function.getName().equals("head") || function.getName().equals("tail"))
-            {
-                if (env.getSpineStack().size() < 1)
-                {
+            } else if(function.getName().equals("head") || function.getName().equals("tail")) {
+                if(env.getSpineStack().size() < 1) {
                     return expr;
-                }
-                else
-                {
+                } else {
                     Expr arg = env.getSpineStack().pop().getRight();
                     Expr reducedArg = reduce(arg);
-                    if (reducedArg instanceof Cons)
-                    {
+                    if(reducedArg instanceof Cons) {
                         return (function.getName().equals("head")) ? ((Cons) reducedArg).getHead() : ((Cons) reducedArg).getTail();
-                    }
-                    else if (reducedArg instanceof Nil)
-                    {
+                    } else if(reducedArg instanceof Nil) {
                         return reducedArg;
-                    }
-                    else
-                    {
+                    } else {
                         throw new WrongTypeException();
                     }
                 }
-            }
-            else
-            {
+            } else {
                 throw new UnknownBuiltInFunction();
             }
-        }
-        else
-        {
+        } else {
             return expr;
         }
     }
 
-    private static Expr putBackInGraph(Expr graph, Expr value, Env env)
-    {
-        if (env.getSpineStack().empty())
-        {
+    private static Expr putBackInGraph(Expr graph, Expr value, Environment env) {
+        if(env.getSpineStack().empty()) {
             return value;
-        }
-        else
-        {
+        } else {
             Application parent = env.getSpineStack().peek();
             parent.setLeft(value);
             return graph;
         }
     }
 
-    public static Expr replace(String identifier, Expr expr, Expr value)
-    {
-        if (expr instanceof Identifier)
-        {
-            if (((Identifier) expr).getValue().equals(identifier))
-            {
+    private static Expr replace(String identifier, Expr body, Expr value) {
+        if(body instanceof Identifier) {
+            if(((Identifier) body).getValue().equals(identifier)) {
                 return value;
             }
         }
-        if (expr instanceof Application)
-        {
-            Application application = (Application)expr;
+        if(body instanceof Application) {
+            Application application = (Application)body;
             application.setLeft(replace(identifier, application.getLeft(), value));
             application.setRight(replace(identifier, application.getRight(), value));
             return application;
-        }
-        else if (expr instanceof Lambda)
-        {
-            Lambda lambda = (Lambda) expr;
-            if (!lambda.getParameter().getValue().equals(identifier))
-            {
+        } else if(body instanceof Lambda) {
+            Lambda lambda = (Lambda) body;
+            if(!lambda.getParameter().getValue().equals(identifier)) {
                 return replace(identifier, lambda.getBody().clone(), value);
             }
         }
-        return expr;
+        return body;
     }
 }

@@ -10,4 +10,9 @@ public class Nil extends Expr {
     public Expr clone() {
         return new Nil();
     }
+
+    @Override
+    public boolean equals(Expr expr) {
+        return expr instanceof Nil;
+    }
 }

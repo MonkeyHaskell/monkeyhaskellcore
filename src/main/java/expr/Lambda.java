@@ -36,4 +36,11 @@ public class Lambda extends Expr {
     public Expr clone() {
         return new Lambda(arg, body);
     }
+
+    @Override
+    public boolean equals(Expr expr) {
+        return expr instanceof Lambda
+                && ((Lambda)expr).getParameter().equals(this.getParameter())
+                && ((Lambda)expr).getBody().equals(this.getBody());
+    }
 }

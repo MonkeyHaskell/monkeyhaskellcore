@@ -20,4 +20,10 @@ public class BuiltIn extends Expr {
     public Expr clone() {
         return new BuiltIn(name);
     }
+
+    @Override
+    public boolean equals(Expr expr) {
+        return expr instanceof BuiltIn
+                && ((BuiltIn) expr).getName().equals(this.getName());
+    }
 }

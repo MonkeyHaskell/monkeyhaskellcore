@@ -24,4 +24,9 @@ public class Identifier extends Expr {
     public Expr clone() {
         return new Identifier(value);
     }
+
+    @Override
+    public boolean equals(Expr expr) {
+        return expr instanceof Identifier && ((Identifier)expr).getValue().equals(this.getValue());
+    }
 }
