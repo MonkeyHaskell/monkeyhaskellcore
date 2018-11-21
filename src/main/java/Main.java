@@ -15,10 +15,12 @@ public class Main {
         Expr test1 = new Application(add1, new Integer(1));
         Expr test2 = new Application(id, new Application(new BuiltIn("head"), new Cons(new Integer(4), new Cons(new Integer(3), new Nil()))));
         Expr test3 = new Application(id, new Application(new BuiltIn("tail"), new Cons(new Integer(4), new Cons(new Integer(3), new Nil()))));
+        Expr test4 = new Application(add1, new Application(add1, new Integer(1)));
 
         reduceAndPrint(test1, 2);
         reduceAndPrint(test2, 2);
         reduceAndPrint(test3, 2);
+        reduceAndPrint(test4, 1);
     }
 
     private static int count = 0;

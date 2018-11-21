@@ -29,7 +29,7 @@ public class Lambda extends Expr {
 
     @Override
     public String toString() {
-        return "(\\" +arg + " . " + body + ')';
+        return "(λ" +arg + " . " + body + ')';
     }
 
     @Override

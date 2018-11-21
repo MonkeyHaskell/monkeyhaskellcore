@@ -38,7 +38,7 @@ public class Application extends Expr {
 
     @Override
     public String toString() {
-        return "@(" + left + ", " + right + ')';
+        return "@(" + left + " " + right + ")";
     }
 
     @Override

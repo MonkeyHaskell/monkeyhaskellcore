@@ -75,8 +75,8 @@ public class Interpreter {
                 }
                 else
                 {
-                    Expr arg1 = env.getSpineStack().pop().getRight();
-                    Expr arg2 = env.getSpineStack().pop().getRight();
+                    Expr arg1 = getArgument(env, true);
+                    Expr arg2 = getArgument(env, true);
                     if (arg1 instanceof Integer && arg2 instanceof Integer)
                     {
                         Expr reduced = new Integer(((Integer) arg1).getValue() + ((Integer) arg2).getValue());
@@ -96,7 +96,7 @@ public class Interpreter {
                 }
                 else
                 {
-                    Expr arg = env.getSpineStack().pop().getRight();
+                    Expr arg = getArgument(env, true);
                     if (arg instanceof Cons)
                     {
                         return (function.getName().equals("head")) ? ((Cons) arg).getHead() : ((Cons) arg).getTail();
@@ -120,6 +120,11 @@ public class Interpreter {
         {
             return expr;
         }
+    }
+
+    private static Expr getArgument(Env env, boolean reduceIt) throws Throwable {
+        Expr arg = env.getSpineStack().pop().getRight();
+        return reduceIt ? reduce(arg, new Env(new Stack<>(), env.getLookupTable())) : arg;
     }
 
     private static Expr putBackInGraph(Expr graph, Expr value, Env env)
